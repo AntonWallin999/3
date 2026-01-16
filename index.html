@@ -15,11 +15,11 @@ a:hover{text-decoration:underline}
 <ul id="file-list"></ul>
 
 <script>
-const owner = "DITT_GITHUB_ANVANDARNAMN";
-const repo = "DITT_REPO_NAMN";
+const owner = "AntonWallin999";
+const repo = "3";
 const branch = "main";
 
-fetch("https://api.github.com/repos/" + owner + "/" + repo + "/contents/?ref=" + branch)
+fetch("https://api.github.com/repos/" + owner + "/" + repo + "/contents?ref=" + branch)
   .then(function(response){return response.json();})
   .then(function(files){
     const list = document.getElementById("file-list");
