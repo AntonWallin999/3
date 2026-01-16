@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="sv">
 <head>
-<meta charset='utf-8'>
-<title>HTML Index</title>
+<meta charset="utf-8">
+<title>Index</title>
 <style>
 body{background:#000;color:#e0e0e0;font-family:monospace}
 h1{color:#6cf}
@@ -12,7 +12,28 @@ a:hover{text-decoration:underline}
 </head>
 <body>
 <h1>Index</h1>
-<ul>
-</ul>
+<ul id="file-list"></ul>
+
+<script>
+const owner = "DITT_GITHUB_ANVANDARNAMN";
+const repo = "DITT_REPO_NAMN";
+const branch = "main";
+
+fetch("https://api.github.com/repos/" + owner + "/" + repo + "/contents/?ref=" + branch)
+  .then(function(response){return response.json();})
+  .then(function(files){
+    const list = document.getElementById("file-list");
+    files.forEach(function(file){
+      if(file.type === "file" && file.name.endsWith(".html") && file.name !== "index.html"){
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.href = file.name;
+        a.textContent = file.name;
+        li.appendChild(a);
+        list.appendChild(li);
+      }
+    });
+  });
+</script>
 </body>
 </html>
