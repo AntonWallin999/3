@@ -6,66 +6,75 @@
 
 <style>
 /* =========================
-   Grundlayout
+   Grundlayout – INGET BLÅTT
    ========================= */
 body{
   background:#000;
-  color:#e0e0e0;
+  color:#d0d0d0;
   font-family:monospace
 }
-h1{color:#6cf}
-ul{margin-bottom:30px}
+h1{
+  color:#c0c0c0;
+  font-weight:600
+}
+ul{
+  margin-bottom:30px
+}
+li{
+  color:#b8b8b8
+}
+
+/* Länkar – tyst silver, inget blått */
+a{
+  color:#b8b8b8;
+  text-decoration:none
+}
+a:hover{
+  color:#e0e0e0;
+  text-decoration:underline
+}
+
+/* Viewer */
 #viewer{
   max-width:900px;
   margin-top:40px;
-  line-height:1.5;
-  color:#e0e0e0;
-}
-
-/* =========================
-   Länkar – strikt uppdelning
-   ========================= */
-
-/* Endast navigeringslistan får blå färg */
-#file-list a{
-  color:#9cf;
-  text-decoration:none;
-}
-#file-list a:hover{
-  text-decoration:underline;
-}
-
-/* Markdown-innehåll: INGEN blå färg */
-#viewer a{
-  color:#e0e0e0;
-  text-decoration:underline;
-}
-#viewer a:hover{
-  color:#ffffff;
+  line-height:1.5
 }
 
 /* =========================================
-   RP9 – Metalliska färger för matematik
+   RP9 – Metalliska färger (ENDA FÄRGKÄLLAN)
    ========================================= */
 
 /* Inline-matematik: silver */
 .math.inline,
-mjx-inline{
+mjx-inline {
   color:#c0c0c0 !important;
   text-shadow:
     0 0 4px rgba(192,192,192,0.35),
     0 0 10px rgba(255,255,255,0.25);
   font-weight:500;
+  transition:color 0.3s ease;
 }
 
 /* Block-matematik: guld */
 .math.block,
-mjx-container[jax="CHTML"][display="true"]{
+mjx-container[jax="CHTML"][display="true"] {
   color:#d4af37 !important;
   text-shadow:
     0 0 6px rgba(212,175,55,0.4),
     0 0 14px rgba(255,215,0,0.3);
   font-weight:500;
+  transition:color 0.3s ease;
+}
+
+/* Hover-reflex */
+.math.inline:hover,
+mjx-inline:hover,
+.math.block:hover,
+mjx-container[jax="CHTML"][display="true"]:hover {
+  text-shadow:
+    0 0 8px rgba(255,255,255,0.45),
+    0 0 16px rgba(255,255,255,0.35);
 }
 </style>
 
@@ -136,15 +145,18 @@ const allowedExtensions=[
 ];
 
 fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents?ref="+branch)
-.then(r=>r.json())
-.then(files=>{
+.then(function(r){return r.json();})
+.then(function(files){
   const list=document.getElementById("file-list");
 
-  files.forEach(file=>{
+  files.forEach(function(file){
     if(file.type!=="file") return;
 
     const name=file.name.toLowerCase();
-    if(!allowedExtensions.some(ext=>name.endsWith(ext))) return;
+    const ok=allowedExtensions.some(function(ext){
+      return name.endsWith(ext);
+    });
+    if(!ok) return;
 
     const li=document.createElement("li");
     const a=document.createElement("a");
@@ -154,8 +166,8 @@ fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents?ref="+branch)
       a.href="#";
       a.onclick=function(){
         fetch(file.name)
-        .then(r=>r.text())
-        .then(t=>{
+        .then(function(r){return r.text();})
+        .then(function(t){
           document.getElementById("viewer").innerHTML=marked.parse(t);
           MathJax.typesetPromise();
         });
