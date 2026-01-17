@@ -44,7 +44,6 @@ a:hover{color:#e0e0e0;text-decoration:underline}
   padding:0;
   overflow-x:auto;
 }
-
 #viewer pre code{
   display:block;
   padding:0.8em 1em;
@@ -54,34 +53,65 @@ a:hover{color:#e0e0e0;text-decoration:underline}
   font-size:0.95em;
   line-height:1.4;
 }
-
-/* Python */
 #viewer pre:has(code.language-python){
   border-left:4px solid #ff8800;
-  background:#000;
 }
-
-/* Markdown */
 #viewer pre:has(code.language-markdown),
 #viewer pre:has(code.language-md){
   border-left:4px solid #2980ff;
   background:#1a1a1a;
 }
-
-/* ASCII */
 #viewer pre:has(code.language-ascii){
   border-left:4px solid #f2f0e6;
-  background:#000;
 }
-
-/* Promt */
 #viewer pre:has(code.language-promt){
   border-left:4px solid #3cff3c;
-  background:#000;
 }
 
 /* ================================
-   MathJax färger
+   RP9 – MULTI-CALLOUT SYSTEM
+   ================================ */
+.callout[data-callout]{
+  --primary:#ffffff;
+  --secondary:#000000;
+  --callout-color:var(--primary);
+  --callout-icon:"⟡";
+  border:2px solid transparent;
+  border-radius:12px;
+  border-image:
+    linear-gradient(135deg,var(--primary),var(--secondary)) 1;
+  padding:0.75rem 1rem 1rem 1rem;
+  box-shadow:
+    0 0 6px color-mix(in srgb,var(--primary) 70%,black),
+    0 0 14px color-mix(in srgb,var(--primary) 40%,black);
+  background:
+    linear-gradient(180deg,rgba(0,0,0,0.35),rgba(0,0,0,0.15));
+}
+.callout[data-callout] .callout-title{
+  font-weight:700;
+  letter-spacing:0.04em;
+  text-shadow:
+    0 0 6px var(--primary),
+    0 0 12px rgba(0,0,0,0.9);
+}
+.callout[data-callout] img{
+  display:block;
+  margin-left:auto;
+  margin-right:auto;
+}
+.callout[data-callout="rp9"]{--primary:#2980ff}
+.callout[data-callout="gul"]{--primary:#ffe600}
+.callout[data-callout="blå"]{--primary:#00aaff}
+.callout[data-callout="röd"]{--primary:#ff2e2e}
+.callout[data-callout="grön"]{--primary:#00ff7f}
+.callout[data-callout="orange"]{--primary:#ff8800}
+.callout[data-callout="svartt"]{--primary:#666666}
+.callout[data-callout="guld"]{--primary:#d4af37}
+.callout[data-callout="silver"]{--primary:#c0c0c0}
+.callout[data-callout="koppar"]{--primary:#b87333}
+
+/* ================================
+   MathJax
    ================================ */
 .math.inline,mjx-inline{
   color:#c0c0c0 !important;
@@ -94,9 +124,7 @@ a:hover{color:#e0e0e0;text-decoration:underline}
               0 0 14px rgba(255,215,0,0.3)
 }
 
-/* ================================
-   Bokläge
-   ================================ */
+/* Bokläge */
 body.book #file-list,
 body.book h1:first-of-type,
 body.book h1:nth-of-type(2),
@@ -110,22 +138,6 @@ body.book #viewer{
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-<script>
-window.MathJax={
-  tex:{inlineMath:[['$','$']],displayMath:[['$$','$$']]},
-  options:{
-    renderActions:{
-      addRP9Classes:[200,function(doc){
-        doc.math.forEach(m=>{
-          const n=m.typesetRoot;
-          n.classList.add("math",m.display?"block":"inline");
-        });
-      },""]
-    }
-  }
-};
-</script>
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </head>
 
@@ -156,126 +168,52 @@ window.MathJax={
 </div>
 
 <script>
-const owner="AntonWallin999";
-const repo="3";
-const branch="main";
+const owner="AntonWallin999",repo="3",branch="main";
+const allowedExtensions=[".html",".md",".markdown",".txt",".pdf",".png",".jpg",".jpeg",".gif",".svg",".zip",".csv",".json",".xml"];
+let apiCalls=0,API_LIMIT=55;
 
-const allowedExtensions=[
-  ".html",".md",".markdown",".txt",".pdf",
-  ".png",".jpg",".jpeg",".gif",".svg",
-  ".zip",".csv",".json",".xml"
-];
-
-/* Rate-limit */
-let apiCalls=0;
-const API_LIMIT=55;
 function safeFetch(url){
-  if(apiCalls>=API_LIMIT){
-    console.warn("GitHub rate-limit nära – avbryter");
-    return Promise.reject("Rate limit");
-  }
-  apiCalls++;
-  return fetch(url);
+  if(apiCalls>=API_LIMIT) return Promise.reject("Rate limit");
+  apiCalls++; return fetch(url);
 }
 
-/* Rekursiv toggle */
-let recursiveMode=false;
-document.getElementById("toggle-recursive").onclick=function(){
-  recursiveMode=!recursiveMode;
-  this.textContent="Rekursiv: "+(recursiveMode?"ON":"OFF");
-  fileList.innerHTML="";
-  recursiveMode?listRecursive(""):listRootOnly();
-};
+let recursiveMode=false,bookMode=false;
+toggleRecursive.onclick=()=>{recursiveMode=!recursiveMode;toggleRecursive.textContent="Rekursiv: "+(recursiveMode?"ON":"OFF");fileList.innerHTML="";recursiveMode?listRecursive(""):listRootOnly()};
+toggleBook.onclick=()=>{bookMode=!bookMode;document.body.classList.toggle("book",bookMode);toggleBook.textContent="Bokläge: "+(bookMode?"ON":"OFF")};
 
-/* Bokläge */
-let bookMode=false;
-document.getElementById("toggle-book").onclick=function(){
-  bookMode=!bookMode;
-  document.body.classList.toggle("book",bookMode);
-  this.textContent="Bokläge: "+(bookMode?"ON":"OFF");
-};
+search.oninput=()=>{const q=search.value.toLowerCase();document.querySelectorAll("#file-list li").forEach(li=>li.style.display=li.textContent.toLowerCase().includes(q)?"":"none")};
 
-/* Sök */
-document.getElementById("search").addEventListener("input",function(){
-  const q=this.value.toLowerCase();
-  document.querySelectorAll("#file-list li").forEach(li=>{
-    li.style.display=li.textContent.toLowerCase().includes(q)?"":"none";
-  });
-});
-
-/* Listning */
-const fileList=document.getElementById("file-list");
-
-function listRootOnly(){
-  safeFetch(`https://api.github.com/repos/${owner}/${repo}/contents?ref=${branch}`)
-  .then(r=>r.json())
-  .then(renderFiles);
-}
-
-function listRecursive(path){
-  safeFetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`)
-  .then(r=>r.json())
-  .then(items=>{
-    items.forEach(item=>{
-      if(item.type==="dir") listRecursive(item.path);
-      else renderFiles([item]);
-    });
-  });
-}
+function listRootOnly(){safeFetch(`https://api.github.com/repos/${owner}/${repo}/contents?ref=${branch}`).then(r=>r.json()).then(renderFiles)}
+function listRecursive(path){safeFetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`).then(r=>r.json()).then(items=>items.forEach(i=>i.type==="dir"?listRecursive(i.path):renderFiles([i])))}
 
 function renderFiles(files){
-  files.forEach(file=>{
-    if(file.type!=="file") return;
-    if(!allowedExtensions.some(ext=>file.name.toLowerCase().endsWith(ext))) return;
-
-    const li=document.createElement("li");
-    const a=document.createElement("a");
-    a.textContent=file.path||file.name;
-
-    if(file.name.match(/\.(md|markdown)$/i)){
+  files.forEach(f=>{
+    if(f.type!=="file")return;
+    if(!allowedExtensions.some(e=>f.name.toLowerCase().endsWith(e)))return;
+    const li=document.createElement("li"),a=document.createElement("a");
+    a.textContent=f.path||f.name;
+    if(f.name.match(/\.(md|markdown)$/i)){
       a.href="#";
-      a.onclick=function(){
-        fetch(file.path||file.name)
-        .then(r=>r.text())
-        .then(t=>{
-          viewer.innerHTML=marked.parse(t);
-          buildTOC();
-          MathJax.typesetPromise();
-        });
-        return false;
-      };
-    }else{
-      a.href=file.path||file.name;
-      a.target="_blank";
-    }
-
-    li.appendChild(a);
-    fileList.appendChild(li);
-  });
+      a.onclick=()=>{fetch(f.path||f.name).then(r=>r.text()).then(t=>{viewer.innerHTML=marked.parse(t);buildTOC();MathJax.typesetPromise()});return false}
+    }else{a.href=f.path||f.name;a.target="_blank"}
+    li.appendChild(a);fileList.appendChild(li)
+  })
 }
 
-/* TOC */
 function buildTOC(){
-  const toc=document.getElementById("toc");
   toc.innerHTML="<strong>Innehåll</strong>";
   const ul=document.createElement("ul");
-
   document.querySelectorAll("#viewer h1,#viewer h2,#viewer h3").forEach((h,i)=>{
-    const id="toc_"+i;
-    h.id=id;
+    h.id="toc_"+i;
     const li=document.createElement("li");
     li.style.marginLeft=h.tagName==="H2"?"15px":h.tagName==="H3"?"30px":"0";
     const a=document.createElement("a");
-    a.href="#"+id;
-    a.textContent=h.textContent;
-    li.appendChild(a);
-    ul.appendChild(li);
+    a.href="#"+h.id;a.textContent=h.textContent;
+    li.appendChild(a);ul.appendChild(li)
   });
-
-  toc.appendChild(ul);
+  toc.appendChild(ul)
 }
 
-/* Init */
 listRootOnly();
 </script>
 
