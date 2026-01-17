@@ -35,6 +35,77 @@ a:hover{color:#e0e0e0;text-decoration:underline}
 #viewer ul{margin-left:20px}
 
 /* ================================
+   TOPBAR + SOK (DOLD TILLS AKTIV)
+   ================================ */
+#topbar{
+  position:sticky;
+  top:0;
+  z-index:50;
+  background:rgba(0,0,0,0.92);
+  backdrop-filter:blur(6px);
+  border-bottom:1px solid #222;
+  padding:10px 0 12px 0;
+  margin:-40px -40px 20px -40px;
+}
+#topbar .row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  padding:0 40px;
+  flex-wrap:wrap;
+}
+.icon-btn{
+  cursor:pointer;
+  user-select:none;
+  border:1px solid #333;
+  background:#000;
+  color:#cfcfcf;
+  border-radius:10px;
+  padding:8px 10px;
+  font-family:monospace;
+  line-height:1;
+  box-shadow:0 0 10px rgba(255,255,255,0.04);
+}
+.icon-btn:hover{border-color:#555;color:#fff}
+#search-panel{
+  display:none;
+  width:100%;
+  padding:10px 40px 0 40px;
+}
+body.search-open #search-panel{display:block}
+#search{
+  width:100%;
+  border:1px solid #444;
+  background:#0b0b0b;
+  color:#e0e0e0;
+  padding:10px 12px;
+  border-radius:10px;
+  outline:none;
+  box-shadow:0 0 12px rgba(41,128,255,0.12);
+}
+#search::placeholder{color:#888}
+#search-hint{
+  margin-top:8px;
+  color:#777;
+  font-size:0.9em;
+}
+#search-close-row{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:8px;
+}
+#search-close{
+  border:1px solid #333;
+  background:#000;
+  color:#cfcfcf;
+  border-radius:10px;
+  padding:6px 10px;
+  font-family:monospace;
+  cursor:pointer;
+}
+#search-close:hover{border-color:#555;color:#fff}
+
+/* ================================
    CODEBLOCK – GEMENSAM BAS
    ================================ */
 #viewer pre{
@@ -43,7 +114,7 @@ a:hover{color:#e0e0e0;text-decoration:underline}
   padding:0.8em 1em;
   overflow-x:auto;
   border-radius:4px;
-  border:1px solid #666; /* Basram */
+  border:1px solid #666;
 }
 
 /* Python – orange ram */
@@ -155,12 +226,23 @@ body.book #viewer{
 
 <body>
 
+<div id="topbar">
+  <div class="row">
+    <button id="toggle-recursive" class="icon-btn" title="Växla rekursiv listning">Rekursiv: OFF</button>
+    <button id="toggle-book" class="icon-btn" title="Växla bokläge">Bokläge: OFF</button>
+    <button id="toggle-search" class="icon-btn" title="Sök (Ctrl+K)">🔍</button>
+  </div>
+
+  <div id="search-panel">
+    <input id="search" type="text" placeholder="Sök… (Esc för att stänga)">
+    <div id="search-hint">Tips: Ctrl+K öppnar sök. Esc stänger. Sök filtrerar fil-listan.</div>
+    <div id="search-close-row">
+      <button id="search-close" type="button">Stäng</button>
+    </div>
+  </div>
+</div>
+
 <h1>Index</h1>
-
-<button id="toggle-recursive">Rekursiv: OFF</button>
-<button id="toggle-book">Bokläge: OFF</button>
-
-<input id="search" type="text" placeholder="Sök…" style="width:100%;margin-bottom:10px">
 
 <ul id="file-list"></ul>
 
@@ -194,30 +276,116 @@ let recursiveMode=false,bookMode=false;
 const toggleRecursive=document.getElementById("toggle-recursive");
 const toggleBook=document.getElementById("toggle-book");
 const fileList=document.getElementById("file-list");
-const search=document.getElementById("search");
 const viewer=document.getElementById("viewer");
 const toc=document.getElementById("toc");
 
-toggleRecursive.onclick=()=>{recursiveMode=!recursiveMode;toggleRecursive.textContent="Rekursiv: "+(recursiveMode?"ON":"OFF");fileList.innerHTML="";recursiveMode?listRecursive(""):listRootOnly()};
-toggleBook.onclick=()=>{bookMode=!bookMode;document.body.classList.toggle("book",bookMode);toggleBook.textContent="Bokläge: "+(bookMode?"ON":"OFF")};
+const toggleSearch=document.getElementById("toggle-search");
+const searchPanel=document.getElementById("search-panel");
+const search=document.getElementById("search");
+const searchClose=document.getElementById("search-close");
 
-search.oninput=()=>{const q=search.value.toLowerCase();document.querySelectorAll("#file-list li").forEach(li=>li.style.display=li.textContent.toLowerCase().includes(q)?"":"none")};
+function applySearchFilter(){
+  const q=(search.value||"").toLowerCase();
+  document.querySelectorAll("#file-list li").forEach(li=>{
+    li.style.display=li.textContent.toLowerCase().includes(q)?"":"none";
+  });
+}
 
-function listRootOnly(){safeFetch(`https://api.github.com/repos/${owner}/${repo}/contents?ref=${branch}`).then(r=>r.json()).then(renderFiles)}
-function listRecursive(path){safeFetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`).then(r=>r.json()).then(items=>items.forEach(i=>i.type==="dir"?listRecursive(i.path):renderFiles([i])))}
+function openSearch(){
+  document.body.classList.add("search-open");
+  searchPanel.style.display="block";
+  search.value="";
+  applySearchFilter();
+  setTimeout(()=>search.focus(),0);
+}
+
+function closeSearch(){
+  document.body.classList.remove("search-open");
+  searchPanel.style.display="none";
+  search.value="";
+  applySearchFilter();
+}
+
+function toggleSearchPanel(){
+  if(document.body.classList.contains("search-open")) closeSearch();
+  else openSearch();
+}
+
+toggleSearch.onclick=()=>toggleSearchPanel();
+searchClose.onclick=()=>closeSearch();
+
+document.addEventListener("keydown",(e)=>{
+  if((e.ctrlKey||e.metaKey) && (e.key==="k"||e.key==="K")){
+    e.preventDefault();
+    openSearch();
+    return;
+  }
+  if(e.key==="Escape"){
+    if(document.body.classList.contains("search-open")){
+      e.preventDefault();
+      closeSearch();
+    }
+  }
+});
+
+search.addEventListener("input",applySearchFilter);
+
+toggleRecursive.onclick=()=>{
+  recursiveMode=!recursiveMode;
+  toggleRecursive.textContent="Rekursiv: "+(recursiveMode?"ON":"OFF");
+  fileList.innerHTML="";
+  recursiveMode?listRecursive(""):listRootOnly();
+};
+
+toggleBook.onclick=()=>{
+  bookMode=!bookMode;
+  document.body.classList.toggle("book",bookMode);
+  toggleBook.textContent="Bokläge: "+(bookMode?"ON":"OFF");
+};
+
+function listRootOnly(){
+  safeFetch(`https://api.github.com/repos/${owner}/${repo}/contents?ref=${branch}`)
+    .then(r=>r.json())
+    .then(renderFiles);
+}
+
+function listRecursive(path){
+  safeFetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`)
+    .then(r=>r.json())
+    .then(items=>items.forEach(i=>i.type==="dir"?listRecursive(i.path):renderFiles([i])));
+}
 
 function renderFiles(files){
   files.forEach(f=>{
     if(f.type!=="file")return;
     if(!allowedExtensions.some(e=>f.name.toLowerCase().endsWith(e)))return;
-    const li=document.createElement("li"),a=document.createElement("a");
+
+    const li=document.createElement("li");
+    const a=document.createElement("a");
     a.textContent=f.path||f.name;
+
     if(f.name.match(/\.(md|markdown)$/i)){
       a.href="#";
-      a.onclick=()=>{fetch(f.path||f.name).then(r=>r.text()).then(t=>{viewer.innerHTML=marked.parse(t);buildTOC();MathJax.typesetPromise()});return false}
-    }else{a.href=f.path||f.name;a.target="_blank"}
-    li.appendChild(a);fileList.appendChild(li)
-  })
+      a.onclick=()=>{
+        fetch(f.path||f.name)
+          .then(r=>r.text())
+          .then(t=>{
+            viewer.innerHTML=marked.parse(t);
+            buildTOC();
+            MathJax.typesetPromise();
+          });
+        return false;
+      };
+    }else{
+      a.href=f.path||f.name;
+      a.target="_blank";
+    }
+
+    li.appendChild(a);
+    fileList.appendChild(li);
+  });
+
+  applySearchFilter();
 }
 
 function buildTOC(){
@@ -228,12 +396,15 @@ function buildTOC(){
     const li=document.createElement("li");
     li.style.marginLeft=h.tagName==="H2"?"15px":h.tagName==="H3"?"30px":"0";
     const a=document.createElement("a");
-    a.href="#"+h.id;a.textContent=h.textContent;
-    li.appendChild(a);ul.appendChild(li)
+    a.href="#"+h.id;
+    a.textContent=h.textContent;
+    li.appendChild(a);
+    ul.appendChild(li);
   });
-  toc.appendChild(ul)
+  toc.appendChild(ul);
 }
 
+closeSearch();
 listRootOnly();
 </script>
 
