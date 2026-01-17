@@ -5,6 +5,9 @@
 <title>Index</title>
 
 <style>
+/* =========================
+   Grundlayout
+   ========================= */
 body{
   background:#000;
   color:#e0e0e0;
@@ -20,35 +23,47 @@ ul{margin-bottom:30px}
   line-height:1.5
 }
 
-/* ================================
-   RP9 – Metallisk matematikstil
-   ================================ */
+/* =========================================
+   RP9 – Metalliska färger (IDENTISK MED CSS)
+   ========================================= */
 
-/* Inline-matematik – silver */
+/* Inline-matematik: silverglans */
 .math.inline,
-mjx-inline{
+mjx-inline {
   color:#c0c0c0 !important;
   text-shadow:
     0 0 4px rgba(192,192,192,0.35),
     0 0 10px rgba(255,255,255,0.25);
   font-weight:500;
+  transition:color 0.3s ease;
 }
 
-/* Block-matematik – guld */
+/* Block-matematik: guldglans */
 .math.block,
-mjx-container[jax="CHTML"][display="true"]{
+mjx-container[jax="CHTML"][display="true"] {
   color:#d4af37 !important;
   text-shadow:
     0 0 6px rgba(212,175,55,0.4),
     0 0 14px rgba(255,215,0,0.3);
   font-weight:500;
+  transition:color 0.3s ease;
+}
+
+/* Diskret ljusreflex vid hover */
+.math.inline:hover,
+mjx-inline:hover,
+.math.block:hover,
+mjx-container[jax="CHTML"][display="true"]:hover {
+  text-shadow:
+    0 0 8px rgba(255,255,255,0.45),
+    0 0 16px rgba(255,255,255,0.35);
 }
 </style>
 
-<!-- Markdown -->
+<!-- Markdown-rendering -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-<!-- MathJax -->
+<!-- MathJax-konfiguration -->
 <script>
 window.MathJax={
   tex:{
@@ -57,13 +72,13 @@ window.MathJax={
   },
   options:{
     renderActions:{
-      addClasses:[
+      addRP9Classes:[
         200,
         function(doc){
           doc.math.forEach(function(m){
-            m.typesetRoot.classList.add(
-              m.display ? "math block" : "math inline"
-            );
+            const node=m.typesetRoot;
+            node.classList.add("math");
+            node.classList.add(m.display ? "block" : "inline");
           });
         },
         ""
@@ -131,7 +146,7 @@ fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents?ref="+branch)
     const a=document.createElement("a");
     a.textContent=file.name;
 
-    /* Markdown → viewer */
+    /* Markdown → intern viewer */
     if(name.endsWith(".md") || name.endsWith(".markdown")){
       a.href="#";
       a.onclick=function(){
