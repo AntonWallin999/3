@@ -35,6 +35,54 @@ a:hover{color:#e0e0e0;text-decoration:underline}
 #viewer p{margin:1em 0}
 #viewer ul{margin-left:20px}
 
+/* ================================
+   CODEBLOCK – GEMENSAM BAS
+   ================================ */
+#viewer pre{
+  background:#000;
+  margin:1.5em 0;
+  padding:0;
+  overflow-x:auto;
+}
+
+#viewer pre code{
+  display:block;
+  padding:0.8em 1em;
+  background:transparent;
+  color:#e0e0e0;
+  font-family:monospace;
+  font-size:0.95em;
+  line-height:1.4;
+}
+
+/* Python */
+#viewer pre:has(code.language-python){
+  border-left:4px solid #ff8800;
+  background:#000;
+}
+
+/* Markdown */
+#viewer pre:has(code.language-markdown),
+#viewer pre:has(code.language-md){
+  border-left:4px solid #2980ff;
+  background:#1a1a1a;
+}
+
+/* ASCII */
+#viewer pre:has(code.language-ascii){
+  border-left:4px solid #f2f0e6;
+  background:#000;
+}
+
+/* Promt */
+#viewer pre:has(code.language-promt){
+  border-left:4px solid #3cff3c;
+  background:#000;
+}
+
+/* ================================
+   MathJax färger
+   ================================ */
 .math.inline,mjx-inline{
   color:#c0c0c0 !important;
   text-shadow:0 0 4px rgba(192,192,192,0.35),
@@ -46,7 +94,9 @@ a:hover{color:#e0e0e0;text-decoration:underline}
               0 0 14px rgba(255,215,0,0.3)
 }
 
-/* Bokläge */
+/* ================================
+   Bokläge
+   ================================ */
 body.book #file-list,
 body.book h1:first-of-type,
 body.book h1:nth-of-type(2),
@@ -116,7 +166,7 @@ const allowedExtensions=[
   ".zip",".csv",".json",".xml"
 ];
 
-/* RATE LIMIT */
+/* Rate-limit */
 let apiCalls=0;
 const API_LIMIT=55;
 function safeFetch(url){
@@ -128,7 +178,7 @@ function safeFetch(url){
   return fetch(url);
 }
 
-/* REKURSIV TOGGLE */
+/* Rekursiv toggle */
 let recursiveMode=false;
 document.getElementById("toggle-recursive").onclick=function(){
   recursiveMode=!recursiveMode;
@@ -137,7 +187,7 @@ document.getElementById("toggle-recursive").onclick=function(){
   recursiveMode?listRecursive(""):listRootOnly();
 };
 
-/* BOKLÄGE */
+/* Bokläge */
 let bookMode=false;
 document.getElementById("toggle-book").onclick=function(){
   bookMode=!bookMode;
@@ -145,7 +195,7 @@ document.getElementById("toggle-book").onclick=function(){
   this.textContent="Bokläge: "+(bookMode?"ON":"OFF");
 };
 
-/* SÖK */
+/* Sök */
 document.getElementById("search").addEventListener("input",function(){
   const q=this.value.toLowerCase();
   document.querySelectorAll("#file-list li").forEach(li=>{
@@ -153,7 +203,7 @@ document.getElementById("search").addEventListener("input",function(){
   });
 });
 
-/* LISTNING */
+/* Listning */
 const fileList=document.getElementById("file-list");
 
 function listRootOnly(){
@@ -225,7 +275,7 @@ function buildTOC(){
   toc.appendChild(ul);
 }
 
-/* INIT */
+/* Init */
 listRootOnly();
 </script>
 
