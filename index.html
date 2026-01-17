@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -12,25 +13,11 @@ body{
   margin:0;
   padding:40px
 }
-h1{
-  color:#c0c0c0;
-  font-weight:600
-}
-ul{
-  margin-bottom:30px;
-  padding-left:20px
-}
-li{
-  color:#b8b8b8
-}
-a{
-  color:#b8b8b8;
-  text-decoration:none
-}
-a:hover{
-  color:#e0e0e0;
-  text-decoration:underline
-}
+h1{color:#c0c0c0;font-weight:600}
+ul{margin-bottom:30px;padding-left:20px}
+li{color:#b8b8b8}
+a{color:#b8b8b8;text-decoration:none}
+a:hover{color:#e0e0e0;text-decoration:underline}
 
 #viewer-wrapper{
   width:100%;
@@ -57,6 +44,18 @@ a:hover{
   color:#d4af37 !important;
   text-shadow:0 0 6px rgba(212,175,55,0.4),
               0 0 14px rgba(255,215,0,0.3)
+}
+
+/* Bokläge */
+body.book #file-list,
+body.book h1:first-of-type,
+body.book h1:nth-of-type(2),
+body.book ul:nth-of-type(2){
+  display:none;
+}
+body.book #viewer{
+  max-width:1100px;
+  margin:auto;
 }
 </style>
 
@@ -85,6 +84,10 @@ window.MathJax={
 <h1>Index</h1>
 
 <button id="toggle-recursive">Rekursiv: OFF</button>
+<button id="toggle-book">Bokläge: OFF</button>
+
+<input id="search" type="text" placeholder="Sök…" style="width:100%;margin-bottom:10px">
+
 <ul id="file-list"></ul>
 
 <h1>Filtyper som renderas</h1>
@@ -96,7 +99,10 @@ window.MathJax={
 </ul>
 
 <div id="viewer-wrapper">
-  <div id="viewer"></div>
+  <div>
+    <div id="toc"></div>
+    <div id="viewer"></div>
+  </div>
 </div>
 
 <script>
@@ -110,24 +116,54 @@ const allowedExtensions=[
   ".zip",".csv",".json",".xml"
 ];
 
-let recursiveMode=false;
-const toggleBtn=document.getElementById("toggle-recursive");
+/* RATE LIMIT */
+let apiCalls=0;
+const API_LIMIT=55;
+function safeFetch(url){
+  if(apiCalls>=API_LIMIT){
+    console.warn("GitHub rate-limit nära – avbryter");
+    return Promise.reject("Rate limit");
+  }
+  apiCalls++;
+  return fetch(url);
+}
 
-toggleBtn.onclick=function(){
+/* REKURSIV TOGGLE */
+let recursiveMode=false;
+document.getElementById("toggle-recursive").onclick=function(){
   recursiveMode=!recursiveMode;
-  toggleBtn.textContent="Rekursiv: "+(recursiveMode?"ON":"OFF");
-  document.getElementById("file-list").innerHTML="";
+  this.textContent="Rekursiv: "+(recursiveMode?"ON":"OFF");
+  fileList.innerHTML="";
   recursiveMode?listRecursive(""):listRootOnly();
 };
 
+/* BOKLÄGE */
+let bookMode=false;
+document.getElementById("toggle-book").onclick=function(){
+  bookMode=!bookMode;
+  document.body.classList.toggle("book",bookMode);
+  this.textContent="Bokläge: "+(bookMode?"ON":"OFF");
+};
+
+/* SÖK */
+document.getElementById("search").addEventListener("input",function(){
+  const q=this.value.toLowerCase();
+  document.querySelectorAll("#file-list li").forEach(li=>{
+    li.style.display=li.textContent.toLowerCase().includes(q)?"":"none";
+  });
+});
+
+/* LISTNING */
+const fileList=document.getElementById("file-list");
+
 function listRootOnly(){
-  fetch(`https://api.github.com/repos/${owner}/${repo}/contents?ref=${branch}`)
+  safeFetch(`https://api.github.com/repos/${owner}/${repo}/contents?ref=${branch}`)
   .then(r=>r.json())
-  .then(files=>renderFiles(files));
+  .then(renderFiles);
 }
 
 function listRecursive(path){
-  fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`)
+  safeFetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`)
   .then(r=>r.json())
   .then(items=>{
     items.forEach(item=>{
@@ -138,27 +174,23 @@ function listRecursive(path){
 }
 
 function renderFiles(files){
-  const list=document.getElementById("file-list");
-
   files.forEach(file=>{
     if(file.type!=="file") return;
-
-    const name=file.name.toLowerCase();
-    if(!allowedExtensions.some(ext=>name.endsWith(ext))) return;
+    if(!allowedExtensions.some(ext=>file.name.toLowerCase().endsWith(ext))) return;
 
     const li=document.createElement("li");
     const a=document.createElement("a");
     a.textContent=file.path||file.name;
 
-    if(name.endsWith(".md")||name.endsWith(".markdown")){
+    if(file.name.match(/\.(md|markdown)$/i)){
       a.href="#";
       a.onclick=function(){
         fetch(file.path||file.name)
         .then(r=>r.text())
         .then(t=>{
           viewer.innerHTML=marked.parse(t);
+          buildTOC();
           MathJax.typesetPromise();
-          window.scrollTo({top:viewer.offsetTop-20});
         });
         return false;
       };
@@ -168,12 +200,35 @@ function renderFiles(files){
     }
 
     li.appendChild(a);
-    list.appendChild(li);
+    fileList.appendChild(li);
   });
 }
 
+/* TOC */
+function buildTOC(){
+  const toc=document.getElementById("toc");
+  toc.innerHTML="<strong>Innehåll</strong>";
+  const ul=document.createElement("ul");
+
+  document.querySelectorAll("#viewer h1,#viewer h2,#viewer h3").forEach((h,i)=>{
+    const id="toc_"+i;
+    h.id=id;
+    const li=document.createElement("li");
+    li.style.marginLeft=h.tagName==="H2"?"15px":h.tagName==="H3"?"30px":"0";
+    const a=document.createElement("a");
+    a.href="#"+id;
+    a.textContent=h.textContent;
+    li.appendChild(a);
+    ul.appendChild(li);
+  });
+
+  toc.appendChild(ul);
+}
+
+/* INIT */
 listRootOnly();
 </script>
 
 </body>
 </html>
+```
