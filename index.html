@@ -14,10 +14,70 @@ body{
 }
 h1{color:#c0c0c0;font-weight:600}
 ul{margin-bottom:30px;padding-left:20px}
-li{color:#b8b8b8}
+li{color:#b8b8b8;list-style:none}
 a{color:#b8b8b8;text-decoration:none}
 a:hover{color:#e0e0e0;text-decoration:underline}
 
+/* =========================
+   TOPBAR
+   ========================= */
+#topbar{
+  position:sticky;
+  top:0;
+  z-index:50;
+  background:rgba(0,0,0,0.92);
+  border-bottom:1px solid #222;
+  margin:-40px -40px 20px -40px;
+  padding:10px 40px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap
+}
+.icon-btn{
+  cursor:pointer;
+  border:1px solid #333;
+  background:#000;
+  color:#cfcfcf;
+  border-radius:10px;
+  padding:8px 10px;
+  font-family:monospace;
+}
+.icon-btn:hover{border-color:#555;color:#fff}
+
+/* =========================
+   EXPLORER
+   ========================= */
+.folder{
+  cursor:pointer;
+  color:#d4af37;
+  margin-top:6px;
+  user-select:none
+}
+.folder::before{
+  content:"▶ ";
+  color:#888
+}
+.folder.open::before{
+  content:"▼ ";
+}
+.folder-children{
+  margin-left:18px;
+  display:none
+}
+.folder.open + .folder-children{
+  display:block
+}
+.file{
+  margin-left:18px
+}
+.file-type{
+  color:#777;
+  margin-left:6px
+}
+
+/* =========================
+   VIEWER
+   ========================= */
 #viewer-wrapper{
   width:100%;
   display:flex;
@@ -27,196 +87,13 @@ a:hover{color:#e0e0e0;text-decoration:underline}
 #viewer{
   max-width:900px;
   width:100%;
-  line-height:1.6;
-  text-align:left
+  line-height:1.6
 }
-#viewer h1,#viewer h2,#viewer h3{color:#d8d8d8}
-#viewer p{margin:1em 0}
-#viewer ul{margin-left:20px}
-
-/* ================================
-   TOPBAR + SOK (DOLD TILLS AKTIV)
-   ================================ */
-#topbar{
-  position:sticky;
-  top:0;
-  z-index:50;
-  background:rgba(0,0,0,0.92);
-  backdrop-filter:blur(6px);
-  border-bottom:1px solid #222;
-  padding:10px 0 12px 0;
-  margin:-40px -40px 20px -40px;
-}
-#topbar .row{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  padding:0 40px;
-  flex-wrap:wrap;
-}
-.icon-btn{
-  cursor:pointer;
-  user-select:none;
-  border:1px solid #333;
-  background:#000;
-  color:#cfcfcf;
-  border-radius:10px;
-  padding:8px 10px;
-  font-family:monospace;
-  line-height:1;
-  box-shadow:0 0 10px rgba(255,255,255,0.04);
-}
-.icon-btn:hover{border-color:#555;color:#fff}
-#search-panel{
-  display:none;
-  width:100%;
-  padding:10px 40px 0 40px;
-}
-body.search-open #search-panel{display:block}
-#search{
-  width:100%;
-  border:1px solid #444;
-  background:#0b0b0b;
-  color:#e0e0e0;
-  padding:10px 12px;
-  border-radius:10px;
-  outline:none;
-  box-shadow:0 0 12px rgba(41,128,255,0.12);
-}
-#search::placeholder{color:#888}
-#search-hint{
-  margin-top:8px;
-  color:#777;
-  font-size:0.9em;
-}
-#search-close-row{
-  display:flex;
-  justify-content:flex-end;
-  margin-top:8px;
-}
-#search-close{
-  border:1px solid #333;
-  background:#000;
-  color:#cfcfcf;
-  border-radius:10px;
-  padding:6px 10px;
-  font-family:monospace;
-  cursor:pointer;
-}
-#search-close:hover{border-color:#555;color:#fff}
-
-/* ================================
-   CODEBLOCK – GEMENSAM BAS
-   ================================ */
 #viewer pre{
   background:#000;
-  margin:1.5em 0;
-  padding:0.8em 1em;
-  overflow-x:auto;
-  border-radius:4px;
-  border:1px solid #666;
-}
-
-/* Python – orange ram */
-#viewer pre:has(code.language-python){
-  border:1px solid #ff8800;
-  background:#000;
-}
-
-/* Markdown – blå ram */
-#viewer pre:has(code.language-markdown),
-#viewer pre:has(code.language-md){
-  border:1px solid #2980ff;
-  background:#1a1a1a;
-}
-
-/* ASCII – elfenbensvit ram */
-#viewer pre:has(code.language-ascii){
-  border:1px solid #f2f0e6;
-  background:#000;
-}
-
-/* Promt – grön ram */
-#viewer pre:has(code.language-promt){
-  border:1px solid #3cff3c;
-  background:#000;
-}
-
-#viewer pre code{
-  display:block;
-  background:transparent;
-  color:#e0e0e0;
-  font-family:monospace;
-  font-size:0.95em;
-  line-height:1.4;
-}
-
-/* ================================
-   RP9 – MULTI-CALLOUT SYSTEM
-   ================================ */
-.callout[data-callout]{
-  --primary:#ffffff;
-  --secondary:#000000;
-  --callout-color:var(--primary);
-  --callout-icon:"⟡";
-  border:2px solid transparent;
-  border-radius:12px;
-  border-image:
-    linear-gradient(135deg,var(--primary),var(--secondary)) 1;
-  padding:0.75rem 1rem 1rem 1rem;
-  box-shadow:
-    0 0 6px color-mix(in srgb,var(--primary) 70%,black),
-    0 0 14px color-mix(in srgb,var(--primary) 40%,black);
-  background:
-    linear-gradient(180deg,rgba(0,0,0,0.35),rgba(0,0,0,0.15));
-}
-.callout[data-callout] .callout-title{
-  font-weight:700;
-  letter-spacing:0.04em;
-  text-shadow:
-    0 0 6px var(--primary),
-    0 0 12px rgba(0,0,0,0.9);
-}
-.callout[data-callout] img{
-  display:block;
-  margin-left:auto;
-  margin-right:auto;
-}
-.callout[data-callout="rp9"]{--primary:#2980ff}
-.callout[data-callout="gul"]{--primary:#ffe600}
-.callout[data-callout="blå"]{--primary:#00aaff}
-.callout[data-callout="röd"]{--primary:#ff2e2e}
-.callout[data-callout="grön"]{--primary:#00ff7f}
-.callout[data-callout="orange"]{--primary:#ff8800}
-.callout[data-callout="svartt"]{--primary:#666666}
-.callout[data-callout="guld"]{--primary:#d4af37}
-.callout[data-callout="silver"]{--primary:#c0c0c0}
-.callout[data-callout="koppar"]{--primary:#b87333}
-
-/* ================================
-   MathJax
-   ================================ */
-.math.inline,mjx-inline{
-  color:#c0c0c0 !important;
-  text-shadow:0 0 4px rgba(192,192,192,0.35),
-              0 0 10px rgba(255,255,255,0.25)
-}
-.math.block,mjx-container[jax="CHTML"][display="true"]{
-  color:#d4af37 !important;
-  text-shadow:0 0 6px rgba(212,175,55,0.4),
-              0 0 14px rgba(255,215,0,0.3)
-}
-
-/* Bokläge */
-body.book #file-list,
-body.book h1:first-of-type,
-body.book h1:nth-of-type(2),
-body.book ul:nth-of-type(2){
-  display:none;
-}
-body.book #viewer{
-  max-width:1100px;
-  margin:auto;
+  padding:10px;
+  border:1px solid #555;
+  overflow-x:auto
 }
 </style>
 
@@ -227,185 +104,151 @@ body.book #viewer{
 <body>
 
 <div id="topbar">
-  <div class="row">
-    <button id="toggle-recursive" class="icon-btn" title="Växla rekursiv listning">Rekursiv: OFF</button>
-    <button id="toggle-book" class="icon-btn" title="Växla bokläge">Bokläge: OFF</button>
-    <button id="toggle-search" class="icon-btn" title="Sök (Ctrl+K)">🔍</button>
-  </div>
-
-  <div id="search-panel">
-    <input id="search" type="text" placeholder="Sök… (Esc för att stänga)">
-    <div id="search-hint">Tips: Ctrl+K öppnar sök. Esc stänger. Sök filtrerar fil-listan.</div>
-    <div id="search-close-row">
-      <button id="search-close" type="button">Stäng</button>
-    </div>
-  </div>
+  <button id="toggle-recursive" class="icon-btn">Rekursiv: OFF</button>
+  <button id="toggle-explorer" class="icon-btn">Explorer: OFF</button>
 </div>
 
 <h1>Index</h1>
-
 <ul id="file-list"></ul>
 
-<h1>Filtyper som renderas</h1>
-<ul>
-<li>.html</li><li>.md</li><li>.markdown</li><li>.txt</li>
-<li>.pdf</li><li>.png</li><li>.jpg</li><li>.jpeg</li>
-<li>.gif</li><li>.svg</li><li>.zip</li>
-<li>.csv</li><li>.json</li><li>.xml</li>
-</ul>
-
 <div id="viewer-wrapper">
-  <div>
-    <div id="toc"></div>
-    <div id="viewer"></div>
-  </div>
+  <div id="viewer"></div>
 </div>
 
 <script>
 const owner="AntonWallin999",repo="3",branch="main";
 const allowedExtensions=[".html",".md",".markdown",".txt",".pdf",".png",".jpg",".jpeg",".gif",".svg",".zip",".csv",".json",".xml"];
-let apiCalls=0,API_LIMIT=55;
 
-function safeFetch(url){
-  if(apiCalls>=API_LIMIT) return Promise.reject("Rate limit");
-  apiCalls++; return fetch(url);
-}
+let recursiveMode=false;
+let explorerMode=false;
+let allFiles=[];
 
-let recursiveMode=false,bookMode=false;
-
-const toggleRecursive=document.getElementById("toggle-recursive");
-const toggleBook=document.getElementById("toggle-book");
 const fileList=document.getElementById("file-list");
 const viewer=document.getElementById("viewer");
-const toc=document.getElementById("toc");
 
-const toggleSearch=document.getElementById("toggle-search");
-const searchPanel=document.getElementById("search-panel");
-const search=document.getElementById("search");
-const searchClose=document.getElementById("search-close");
-
-function applySearchFilter(){
-  const q=(search.value||"").toLowerCase();
-  document.querySelectorAll("#file-list li").forEach(li=>{
-    li.style.display=li.textContent.toLowerCase().includes(q)?"":"none";
-  });
-}
-
-function openSearch(){
-  document.body.classList.add("search-open");
-  searchPanel.style.display="block";
-  search.value="";
-  applySearchFilter();
-  setTimeout(()=>search.focus(),0);
-}
-
-function closeSearch(){
-  document.body.classList.remove("search-open");
-  searchPanel.style.display="none";
-  search.value="";
-  applySearchFilter();
-}
-
-function toggleSearchPanel(){
-  if(document.body.classList.contains("search-open")) closeSearch();
-  else openSearch();
-}
-
-toggleSearch.onclick=()=>toggleSearchPanel();
-searchClose.onclick=()=>closeSearch();
-
-document.addEventListener("keydown",(e)=>{
-  if((e.ctrlKey||e.metaKey) && (e.key==="k"||e.key==="K")){
-    e.preventDefault();
-    openSearch();
-    return;
-  }
-  if(e.key==="Escape"){
-    if(document.body.classList.contains("search-open")){
-      e.preventDefault();
-      closeSearch();
-    }
-  }
-});
-
-search.addEventListener("input",applySearchFilter);
-
-toggleRecursive.onclick=()=>{
+document.getElementById("toggle-recursive").onclick=()=>{
   recursiveMode=!recursiveMode;
-  toggleRecursive.textContent="Rekursiv: "+(recursiveMode?"ON":"OFF");
+  document.getElementById("toggle-recursive").textContent="Rekursiv: "+(recursiveMode?"ON":"OFF");
+  loadFiles();
+};
+
+document.getElementById("toggle-explorer").onclick=()=>{
+  explorerMode=!explorerMode;
+  document.getElementById("toggle-explorer").textContent="Explorer: "+(explorerMode?"ON":"OFF");
+  render();
+};
+
+function loadFiles(){
+  allFiles=[];
   fileList.innerHTML="";
-  recursiveMode?listRecursive(""):listRootOnly();
-};
+  recursiveMode?listRecursive(""):listRoot();
+}
 
-toggleBook.onclick=()=>{
-  bookMode=!bookMode;
-  document.body.classList.toggle("book",bookMode);
-  toggleBook.textContent="Bokläge: "+(bookMode?"ON":"OFF");
-};
-
-function listRootOnly(){
-  safeFetch(`https://api.github.com/repos/${owner}/${repo}/contents?ref=${branch}`)
+function listRoot(){
+  fetch(`https://api.github.com/repos/${owner}/${repo}/contents?ref=${branch}`)
     .then(r=>r.json())
-    .then(renderFiles);
+    .then(d=>{allFiles=d;render()});
 }
 
 function listRecursive(path){
-  safeFetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`)
+  fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`)
     .then(r=>r.json())
-    .then(items=>items.forEach(i=>i.type==="dir"?listRecursive(i.path):renderFiles([i])));
+    .then(items=>{
+      items.forEach(i=>{
+        if(i.type==="dir") listRecursive(i.path);
+        else allFiles.push(i);
+      });
+      render();
+    });
 }
 
-function renderFiles(files){
-  files.forEach(f=>{
-    if(f.type!=="file")return;
-    if(!allowedExtensions.some(e=>f.name.toLowerCase().endsWith(e)))return;
+/* =========================
+   RENDER
+   ========================= */
+function render(){
+  fileList.innerHTML="";
+  explorerMode?renderExplorer():renderFlat();
+}
 
-    const li=document.createElement("li");
-    const a=document.createElement("a");
-    a.textContent=f.path||f.name;
+function renderFlat(){
+  allFiles
+    .filter(f=>allowedExtensions.some(e=>f.name.toLowerCase().endsWith(e)))
+    .sort((a,b)=>(a.path||a.name).localeCompare(b.path||b.name,"sv"))
+    .forEach(renderFile);
+}
 
-    if(f.name.match(/\.(md|markdown)$/i)){
-      a.href="#";
-      a.onclick=()=>{
-        fetch(f.path||f.name)
-          .then(r=>r.text())
-          .then(t=>{
+function renderExplorer(){
+  const tree={};
+  allFiles.forEach(f=>{
+    if(!allowedExtensions.some(e=>f.name.toLowerCase().endsWith(e))) return;
+    const parts=(f.path||f.name).split("/");
+    let node=tree;
+    parts.forEach((p,i)=>{
+      node[p]=node[p]||{__files:[]};
+      if(i===parts.length-1) node.__files.push(f);
+      node=node[p];
+    });
+  });
+  renderFolder(tree,fileList);
+}
+
+function renderFolder(node,container){
+  Object.keys(node).filter(k=>k!=="__files").sort().forEach(folder=>{
+    const title=document.createElement("div");
+    title.className="folder";
+    title.textContent=folder;
+    const children=document.createElement("div");
+    children.className="folder-children";
+    title.onclick=()=>title.classList.toggle("open");
+    container.appendChild(title);
+    container.appendChild(children);
+    renderFolder(node[folder],children);
+  });
+
+  (node.__files||[])
+    .sort((a,b)=>{
+      const ea=a.name.split(".").pop();
+      const eb=b.name.split(".").pop();
+      return ea===eb?a.name.localeCompare(b.name):ea.localeCompare(eb);
+    })
+    .forEach(f=>{
+      const li=document.createElement("li");
+      li.className="file";
+      const a=document.createElement("a");
+      a.textContent=f.name;
+      if(f.name.match(/\.(md|markdown)$/i)){
+        a.href="#";
+        a.onclick=()=>{
+          fetch(f.path).then(r=>r.text()).then(t=>{
             viewer.innerHTML=marked.parse(t);
-            buildTOC();
             MathJax.typesetPromise();
           });
-        return false;
-      };
-    }else{
-      a.href=f.path||f.name;
-      a.target="_blank";
-    }
-
-    li.appendChild(a);
-    fileList.appendChild(li);
-  });
-
-  applySearchFilter();
+          return false;
+        };
+      }else{
+        a.href=f.path;
+        a.target="_blank";
+      }
+      const ext=document.createElement("span");
+      ext.className="file-type";
+      ext.textContent="."+f.name.split(".").pop();
+      li.appendChild(a);
+      li.appendChild(ext);
+      container.appendChild(li);
+    });
 }
 
-function buildTOC(){
-  toc.innerHTML="<strong>Innehåll</strong>";
-  const ul=document.createElement("ul");
-  document.querySelectorAll("#viewer h1,#viewer h2,#viewer h3").forEach((h,i)=>{
-    h.id="toc_"+i;
-    const li=document.createElement("li");
-    li.style.marginLeft=h.tagName==="H2"?"15px":h.tagName==="H3"?"30px":"0";
-    const a=document.createElement("a");
-    a.href="#"+h.id;
-    a.textContent=h.textContent;
-    li.appendChild(a);
-    ul.appendChild(li);
-  });
-  toc.appendChild(ul);
+function renderFile(f){
+  const li=document.createElement("li");
+  const a=document.createElement("a");
+  a.textContent=f.path||f.name;
+  a.href=f.path||f.name;
+  a.target="_blank";
+  li.appendChild(a);
+  fileList.appendChild(li);
 }
 
-closeSearch();
-listRootOnly();
+loadFiles();
 </script>
 
 </body>
